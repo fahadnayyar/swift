@@ -3184,6 +3184,7 @@ namespace {
     VarDecl *getImplicitProperty(ImportedName importedName,
                                  const clang::FunctionDecl *accessor);
 
+    // FN_here : how diagnostics are passed in C++
     bool foreignReferenceTypePassedByRef(const clang::FunctionDecl *decl) {
       bool anyParamPassesByVal =
           llvm::any_of(decl->parameters(), [this, decl](auto *param) {
@@ -3223,6 +3224,7 @@ namespace {
       return false;
     }
 
+    // FN_here
     Decl *VisitFunctionDecl(const clang::FunctionDecl *decl) {
       // Import the name of the function.
       ImportedName importedName;
@@ -3366,6 +3368,7 @@ namespace {
       return true;
     }
 
+    // FN_here
     Decl *importFunctionDecl(
         const clang::FunctionDecl *decl, ImportedName importedName,
         std::optional<ImportedName> correctSwiftName,
@@ -3750,6 +3753,7 @@ namespace {
              });
     }
 
+    // FN_HERE
     Decl *VisitCXXMethodDecl(const clang::CXXMethodDecl *decl) {
       // The static `operator ()` introduced in C++ 23 is still callable as an
       // instance operator in C++, and we want to preserve the ability to call
