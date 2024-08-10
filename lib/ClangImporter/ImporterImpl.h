@@ -179,6 +179,10 @@ enum class ImportTypeKind {
   Enum
 };
 
+// FN_TODO: Understand how the CF_RETURNS_RETAINED and CF_RETURNS_NON_RETAINED
+// are implemented and how they are different from swift_attrs like
+// SWIFT_SHARED_REFERENCE
+
 /// Flags which are extracted from an imported declaration to influence how its
 /// type is imported. Typically used via \c ImportTypeAttrs to form an option
 /// set.

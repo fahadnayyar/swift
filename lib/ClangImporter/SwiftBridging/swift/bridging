@@ -158,6 +158,13 @@
 #define SWIFT_NONCOPYABLE \
   __attribute__((swift_attr("~Copyable")))
 
+/// Specifies the ownership semantics (passed as owned/retained or
+/// unowned/unretained) for C++ free/global functions and static methods having
+/// a FRT as return type.
+#define SWIFT_RETURNS_RETAINED __attribute__((swift_attr("returns_retained")))
+#define SWIFT_RETURNS_UNRETAINED                                               \
+  __attribute__((swift_attr("returns_unretained")))
+
 #else  // #if _CXX_INTEROP_HAS_ATTRIBUTE(swift_attr)
 
 // Empty defines for compilers that don't support `attribute(swift_attr)`.
@@ -172,6 +179,8 @@
 #define SWIFT_MUTATING 
 #define SWIFT_UNCHECKED_SENDABLE
 #define SWIFT_NONCOPYABLE
+#define SWIFT_RETURNS_RETAINED
+#define SWIFT_RETURNS_UNRETAINED
 
 #endif // #if _CXX_INTEROP_HAS_ATTRIBUTE(swift_attr)
 

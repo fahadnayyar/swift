@@ -3509,6 +3509,22 @@ public:
   }
 };
 
+static bool hasReturnsRetainedAttr(const clang::FunctionDecl *decl) {
+  return decl->hasAttrs() && llvm::any_of(decl->getAttrs(), [](auto *attr) {
+            if (auto swiftAttr = dyn_cast<clang::SwiftAttrAttr>(attr))
+              return swiftAttr->getAttribute() == "returns_retained";
+            return false;
+          });
+}
+
+static bool hasReturnsUnretainedAttr(const clang::FunctionDecl *decl) {
+  return decl->hasAttrs() && llvm::any_of(decl->getAttrs(), [](auto *attr) {
+            if (auto swiftAttr = dyn_cast<clang::SwiftAttrAttr>(attr))
+              return swiftAttr->getAttribute() == "returns_unretained";
+            return false;
+          });;
+}
+
 /// Conventions based on C function declarations.
 class CFunctionConventions : public CFunctionTypeConventions {
   using super = CFunctionTypeConventions;
@@ -3541,6 +3557,18 @@ public:
       return ResultConvention::Indirect;
     }
 
+    llvm::errs() << "Printing annotation info for TheDecl in SILFunctionType.cpp file:\n";
+    TheDecl->dump();
+    if (hasReturnsRetainedAttr(TheDecl)) {
+      llvm::errs() << "passed as @owned\n\n\n";
+      return ResultConvention::Owned;
+    } else if (hasReturnsUnretainedAttr(TheDecl)) {
+      llvm::errs() << "passed as @unowned\n\n\n";
+      return ResultConvention::Unowned;
+    } else {
+      llvm::errs() << "passed as prev default behaviour\n\n\n";
+    }
+    
     if (isCFTypedef(tl, TheDecl->getReturnType())) {
       // The CF attributes aren't represented in the type, so we need
       // to check them here.
@@ -3619,6 +3647,19 @@ public:
       // possible to make it easy for LLVM to optimize away the thunk.
       return ResultConvention::Indirect;
     }
+
+    llvm::errs() << "Printing annotation info for TheDecl in SILFunctionType.cpp file:\n";
+    TheDecl->dump();
+    if (hasReturnsRetainedAttr(TheDecl)) {
+      llvm::errs() << "passed as @owned\n\n\n";
+      return ResultConvention::Owned;
+    } else if (hasReturnsUnretainedAttr(TheDecl)) {
+      llvm::errs() << "passed as @unowned\n\n\n";
+      return ResultConvention::Unowned;
+    } else {
+      llvm::errs() << "passed as prev default behaviour\n\n\n";
+    }
+
     if (TheDecl->hasAttr<clang::CFReturnsRetainedAttr>() &&
         resultTL.getLoweredType().isForeignReferenceType()) {
       return ResultConvention::Owned;
