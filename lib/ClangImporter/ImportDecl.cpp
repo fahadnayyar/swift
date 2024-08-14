@@ -3184,7 +3184,6 @@ namespace {
     VarDecl *getImplicitProperty(ImportedName importedName,
                                  const clang::FunctionDecl *accessor);
 
-    // FN_here : how diagnostics are passed in C++
     bool foreignReferenceTypePassedByRef(const clang::FunctionDecl *decl) {
       bool anyParamPassesByVal =
           llvm::any_of(decl->parameters(), [this, decl](auto *param) {
@@ -3224,7 +3223,6 @@ namespace {
       return false;
     }
 
-    // FN_here
     Decl *VisitFunctionDecl(const clang::FunctionDecl *decl) {
       // Import the name of the function.
       ImportedName importedName;
@@ -3257,16 +3255,6 @@ namespace {
         if (!property) return nullptr;
         return property->getParsedAccessor(AccessorKind::Set);
       }
-
-      // llvm::errs() << "Printing annotation info for decl:\n";
-      // decl->dump();
-      // if (hasReturnsRetainedAttr(decl)) {
-      //   llvm::errs() << "passed as @owned\n\n\n";
-      // } else if (hasReturnsUnretainedAttr(decl)) {
-      //   llvm::errs() << "passed as @unowned\n\n\n";
-      // } else {
-      //   llvm::errs() << "passed as prev default behaviour\n\n\n";
-      // }
 
       return importFunctionDecl(decl, importedName, correctSwiftName,
                                 std::nullopt);
@@ -3378,7 +3366,6 @@ namespace {
       return true;
     }
 
-    // FN_here
     Decl *importFunctionDecl(
         const clang::FunctionDecl *decl, ImportedName importedName,
         std::optional<ImportedName> correctSwiftName,
@@ -3747,33 +3734,6 @@ namespace {
       recordObjCOverride(result);
     }
 
-    // IMP
-      // static bool hasSwiftAttribute(const clang::Decl *decl, StringRef attrStr) {
-      // return decl->hasAttrs() && llvm::any_of(decl->getAttrs(), [](auto *attr) {
-      //          if (auto swiftAttr = dyn_cast<clang::SwiftAttrAttr>(attr))
-      //            return swiftAttr->getAttribute() == attrStr;
-      //          return false;
-      //        });
-      
-      // if (decl->hasAttrs() && llvm::any_of(decl->getAttrs(), [&](auto *A) {
-      //       if (auto swiftAttr = dyn_cast<clang::SwiftAttrAttr>(A))
-      //         return swiftAttr->getAttribute() == attr;
-      //       return false;
-      //     }))
-      //   return true;
-
-      // if (auto *P = dyn_cast<clang::ParmVarDecl>(decl)) {
-      //   bool found = false;
-      //   findSwiftAttributes(P->getOriginalType(),
-      //                       [&](const clang::SwiftAttrAttr *swiftAttr) {
-      //                         found |= swiftAttr->getAttribute() == attr;
-      //                       });
-      //   return found;
-      // }
-
-      // return false;
-    // }
-    
     static bool hasUnsafeAPIAttr(const clang::Decl *decl) {
       return decl->hasAttrs() && llvm::any_of(decl->getAttrs(), [](auto *attr) {
                if (auto swiftAttr = dyn_cast<clang::SwiftAttrAttr>(attr))
@@ -3790,26 +3750,6 @@ namespace {
              });
     }
 
-    // static bool hasReturnsRetainedAttr(const clang::FunctionDecl *decl) {
-    //   return decl->hasAttrs() && llvm::any_of(decl->getAttrs(), [](auto *attr) {
-    //            if (auto swiftAttr = dyn_cast<clang::SwiftAttrAttr>(attr))
-    //              return swiftAttr->getAttribute() == "returns_retained";
-    //            return false;
-    //          });
-    //   // return hasSwiftAttribute(decl, "pass_owned");
-
-    // }
-
-    // static bool hasReturnsUnretainedAttr(const clang::FunctionDecl *decl) {
-    //   return decl->hasAttrs() && llvm::any_of(decl->getAttrs(), [](auto *attr) {
-    //            if (auto swiftAttr = dyn_cast<clang::SwiftAttrAttr>(attr))
-    //              return swiftAttr->getAttribute() == "returns_unretained";
-    //            return false;
-    //          });;
-    //   // return hasSwiftAttribute(decl, "pass_unowned");
-    // }
-
-    // FN_HERE
     Decl *VisitCXXMethodDecl(const clang::CXXMethodDecl *decl) {
       // The static `operator ()` introduced in C++ 23 is still callable as an
       // instance operator in C++, and we want to preserve the ability to call

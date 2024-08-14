@@ -2319,7 +2319,6 @@ checkIndividualConformance(NormalProtocolConformance *conformance) {
     }
   }
 
-  // HERE
   if (Proto->isObjC()) {
     // Foreign classes cannot conform to objc protocols.
     if (auto clazz = DC->getSelfClassDecl()) {

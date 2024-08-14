@@ -7363,14 +7363,6 @@ static bool hasNonCopyableAttr(const clang::RecordDecl *decl) {
   return hasSwiftAttribute(decl, "~Copyable");
 }
 
-// static bool hasReturnsRetainedAttr(const clang::FunctionDecl *decl) {
-//   return hasSwiftAttribute(decl, "pass_owned");
-// }
-
-// static bool hasReturnsUnretainedAttr(const clang::FunctionDecl *decl) {
-//   return hasSwiftAttribute(decl, "pass_unowned");
-// }
-
 /// Recursively checks that there are no pointers in any fields or base classes.
 /// Does not check C++ records with specific API annotations.
 static bool hasPointerInSubobjects(const clang::CXXRecordDecl *decl) {

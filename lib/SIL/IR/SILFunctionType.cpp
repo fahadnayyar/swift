@@ -3423,6 +3423,27 @@ protected:
                            const clang::FunctionType *type)
     : Conventions(kind), FnType(type) {}
 
+  // Helper function to check if the FunctionDecl has
+  // swift_attr("returns_retained") attribute
+  static bool hasReturnsRetainedAttr(const clang::FunctionDecl *decl) {
+    return decl->hasAttrs() && llvm::any_of(decl->getAttrs(), [](auto *attr) {
+            if (auto swiftAttr = dyn_cast<clang::SwiftAttrAttr>(attr))
+              return swiftAttr->getAttribute() == "returns_retained";
+            return false;
+          });
+  }
+
+  // Helper function to check if the FunctionDecl has
+  // swift_attr("returns_unretained") attribute
+  static bool hasReturnsUnretainedAttr(const clang::FunctionDecl *decl) {
+    return decl->hasAttrs() && llvm::any_of(decl->getAttrs(), [](auto *attr) {
+            if (auto swiftAttr = dyn_cast<clang::SwiftAttrAttr>(attr))
+              return swiftAttr->getAttribute() == "returns_unretained";
+            return false;
+          });
+    ;
+  }
+
 public:
   CFunctionTypeConventions(const clang::FunctionType *type)
     : Conventions(ConventionsKind::CFunctionType), FnType(type) {}
@@ -3509,22 +3530,6 @@ public:
   }
 };
 
-static bool hasReturnsRetainedAttr(const clang::FunctionDecl *decl) {
-  return decl->hasAttrs() && llvm::any_of(decl->getAttrs(), [](auto *attr) {
-            if (auto swiftAttr = dyn_cast<clang::SwiftAttrAttr>(attr))
-              return swiftAttr->getAttribute() == "returns_retained";
-            return false;
-          });
-}
-
-static bool hasReturnsUnretainedAttr(const clang::FunctionDecl *decl) {
-  return decl->hasAttrs() && llvm::any_of(decl->getAttrs(), [](auto *attr) {
-            if (auto swiftAttr = dyn_cast<clang::SwiftAttrAttr>(attr))
-              return swiftAttr->getAttribute() == "returns_unretained";
-            return false;
-          });;
-}
-
 /// Conventions based on C function declarations.
 class CFunctionConventions : public CFunctionTypeConventions {
   using super = CFunctionTypeConventions;
@@ -3548,7 +3553,6 @@ public:
     llvm_unreachable("C functions do not have pack parameters");
   }
 
-  // FN_Here IMP
   ResultConvention getResult(const TypeLowering &tl) const override {
     // C++ constructors return indirectly.
     // TODO: this may be different depending on the ABI, so we may have to
@@ -3557,18 +3561,17 @@ public:
       return ResultConvention::Indirect;
     }
 
-    llvm::errs() << "Printing annotation info for TheDecl in SILFunctionType.cpp file:\n";
-    TheDecl->dump();
-    if (hasReturnsRetainedAttr(TheDecl)) {
-      llvm::errs() << "passed as @owned\n\n\n";
-      return ResultConvention::Owned;
+    // Explicitly setting the ownership of the returned FRT if the C++
+    // global/free function has either swift_attr("returns_retained") or
+    // ("returns_unretained") attribute.
+    if (hasReturnsUnretainedAttr(TheDecl) && hasReturnsRetainedAttr(TheDecl)) {
+      llvm::errs() << "AAAAAh!\n";
     } else if (hasReturnsUnretainedAttr(TheDecl)) {
-      llvm::errs() << "passed as @unowned\n\n\n";
       return ResultConvention::Unowned;
-    } else {
-      llvm::errs() << "passed as prev default behaviour\n\n\n";
+    } else if (hasReturnsRetainedAttr(TheDecl)) {
+      return ResultConvention::Owned;
     }
-    
+
     if (isCFTypedef(tl, TheDecl->getReturnType())) {
       // The CF attributes aren't represented in the type, so we need
       // to check them here.
@@ -3648,16 +3651,15 @@ public:
       return ResultConvention::Indirect;
     }
 
-    llvm::errs() << "Printing annotation info for TheDecl in SILFunctionType.cpp file:\n";
-    TheDecl->dump();
-    if (hasReturnsRetainedAttr(TheDecl)) {
-      llvm::errs() << "passed as @owned\n\n\n";
-      return ResultConvention::Owned;
+    // Explicitly setting the ownership of the returned FRT if the C++ member
+    // method has either swift_attr("returns_retained") or
+    // ("returns_unretained") attribute.
+    if (hasReturnsUnretainedAttr(TheDecl) && hasReturnsRetainedAttr(TheDecl)) {
+      llvm::errs() << "AAAAAh!\n";
     } else if (hasReturnsUnretainedAttr(TheDecl)) {
-      llvm::errs() << "passed as @unowned\n\n\n";
       return ResultConvention::Unowned;
-    } else {
-      llvm::errs() << "passed as prev default behaviour\n\n\n";
+    } else if (hasReturnsRetainedAttr(TheDecl)) {
+      return ResultConvention::Owned;
     }
 
     if (TheDecl->hasAttr<clang::CFReturnsRetainedAttr>() &&
