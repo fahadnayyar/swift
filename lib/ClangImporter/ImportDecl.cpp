@@ -3256,6 +3256,15 @@ namespace {
         return property->getParsedAccessor(AccessorKind::Set);
       }
 
+      // Emit error if a decl is annotated with both
+      // swift_attr("returns_retained") and swift_attr("returns_unretained")
+      if (hasReturnsRetainedAttr(decl) && hasReturnsUnretainedAttr(decl)) {
+        // llvm::errs() << "ERROR: can't have both ways\n\n\n";
+        HeaderLoc loc(decl->getLocation());
+        Impl.diagnose(loc, diag::both_returns_retained_returns_unretained,
+                      decl);
+      }
+
       return importFunctionDecl(decl, importedName, correctSwiftName,
                                 std::nullopt);
     }
@@ -3748,6 +3757,27 @@ namespace {
                  return swiftAttr->getAttribute() == "import_computed_property";
                return false;
              });
+    }
+
+    // Helper function to check if the FunctionDecl has
+    // swift_attr("returns_retained") attribute
+    static bool hasReturnsRetainedAttr(const clang::FunctionDecl *decl) {
+      return decl->hasAttrs() && llvm::any_of(decl->getAttrs(), [](auto *attr) {
+              if (auto swiftAttr = dyn_cast<clang::SwiftAttrAttr>(attr))
+                return swiftAttr->getAttribute() == "returns_retained";
+              return false;
+            });
+    }
+
+    // Helper function to check if the FunctionDecl has
+    // swift_attr("returns_unretained") attribute
+    static bool hasReturnsUnretainedAttr(const clang::FunctionDecl *decl) {
+      return decl->hasAttrs() && llvm::any_of(decl->getAttrs(), [](auto *attr) {
+              if (auto swiftAttr = dyn_cast<clang::SwiftAttrAttr>(attr))
+                return swiftAttr->getAttribute() == "returns_unretained";
+              return false;
+            });
+      ;
     }
 
     Decl *VisitCXXMethodDecl(const clang::CXXMethodDecl *decl) {

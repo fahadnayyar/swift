@@ -3564,12 +3564,12 @@ public:
     // Explicitly setting the ownership of the returned FRT if the C++
     // global/free function has either swift_attr("returns_retained") or
     // ("returns_unretained") attribute.
-    if (hasReturnsUnretainedAttr(TheDecl) && hasReturnsRetainedAttr(TheDecl)) {
-      llvm::errs() << "AAAAAh!\n";
-    } else if (hasReturnsUnretainedAttr(TheDecl)) {
-      return ResultConvention::Unowned;
-    } else if (hasReturnsRetainedAttr(TheDecl)) {
-      return ResultConvention::Owned;
+    if (tl.getLoweredType().isForeignReferenceType()) {
+      if (hasReturnsUnretainedAttr(TheDecl)) {
+        return ResultConvention::Unowned;
+      } else if (hasReturnsRetainedAttr(TheDecl)) {
+        return ResultConvention::Owned;
+      }
     }
 
     if (isCFTypedef(tl, TheDecl->getReturnType())) {
@@ -3654,12 +3654,12 @@ public:
     // Explicitly setting the ownership of the returned FRT if the C++ member
     // method has either swift_attr("returns_retained") or
     // ("returns_unretained") attribute.
-    if (hasReturnsUnretainedAttr(TheDecl) && hasReturnsRetainedAttr(TheDecl)) {
-      llvm::errs() << "AAAAAh!\n";
-    } else if (hasReturnsUnretainedAttr(TheDecl)) {
-      return ResultConvention::Unowned;
-    } else if (hasReturnsRetainedAttr(TheDecl)) {
-      return ResultConvention::Owned;
+    if (resultTL.getLoweredType().isForeignReferenceType()) {
+      if (hasReturnsUnretainedAttr(TheDecl)) {
+        return ResultConvention::Unowned;
+      } else if (hasReturnsRetainedAttr(TheDecl)) {
+        return ResultConvention::Owned;
+      }
     }
 
     if (TheDecl->hasAttr<clang::CFReturnsRetainedAttr>() &&

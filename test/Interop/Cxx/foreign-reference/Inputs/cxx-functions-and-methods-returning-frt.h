@@ -62,3 +62,33 @@ struct StructWithStaticMethodsReturningFRTWithAttributeReturnsUnretained {
     static FRTStruct* _Nonnull StaticMethodReturningFRT_init() __attribute__((swift_attr("returns_unretained")));
     static FRTStruct* _Nonnull StaticMethodReturningFRT_clone() __attribute__((swift_attr("returns_unretained")));
 };
+
+
+// Global/free C++ functions returning FRT with both attributes swift_attr("returns_unretained") and swift_attr("returns_retained")
+FRTStruct* _Nonnull global_function_returning_FRT_with_both_attrs_returns_retained_returns_unretained() __attribute__((swift_attr("returns_retained"))) __attribute__((swift_attr("returns_unretained"))); 
+
+// Struct having static method returning FRT with both attributes swift_attr("returns_unretained") and swift_attr("returns_retained")
+struct StructWithStaticMethodsReturningFRTWithBothAttributesReturnsRetainedAndReturnsUnretained {
+    static FRTStruct* _Nonnull StaticMethodReturningFRT() __attribute__((swift_attr("returns_retained"))) __attribute__((swift_attr("returns_unretained")));
+};
+
+struct NonFRTStruct {
+};
+
+// Global/free C++ functions returning non-FRT
+NonFRTStruct* _Nonnull global_function_returning_non_FRT();
+NonFRTStruct* _Nonnull global_function_returning_non_FRT_with_attr_returns_retained() __attribute__((swift_attr("returns_retained")));
+NonFRTStruct* _Nonnull global_function_returning_non_FRT_with_attr_returns_unretained() __attribute__((swift_attr("returns_unretained"))); 
+NonFRTStruct* _Nonnull global_function_returning_non_FRT_create();
+NonFRTStruct* _Nonnull global_function_returning_non_FRT_copy();
+
+
+// Struct having static method returning non-FRT
+struct StructWithStaticMethodsReturningNonFRT {
+    static NonFRTStruct* _Nonnull StaticMethodReturningNonFRT();
+    static NonFRTStruct* _Nonnull StaticMethodReturningNonFRTWithAttrReturnsRetained() __attribute__((swift_attr("returns_retained")));
+    static NonFRTStruct* _Nonnull StaticMethodReturningNonFRTWithAttrReturnsUnretained() __attribute__((swift_attr("returns_unretained")));
+    static NonFRTStruct* _Nonnull StaticMethodReturningNonFRT_create();
+    static NonFRTStruct* _Nonnull StaticMethodReturningNonFRT_copy();
+};
+

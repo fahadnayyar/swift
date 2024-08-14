@@ -62,3 +62,21 @@ func testStaticMethodsWithAttrubuteReturnsUnretained() {
     let frtLocalVar4 = StructWithStaticMethodsReturningFRTWithAttributeReturnsUnretained.StaticMethodReturningFRT_init(); // CHECK: function_ref @{{.*}}StaticMethodReturningFRT_init{{.*}} : $@convention(c) () -> FRTStruct
     let frtLocalVar5 = StructWithStaticMethodsReturningFRTWithAttributeReturnsUnretained.StaticMethodReturningFRT_clone(); // CHECK: function_ref @{{.*}}StaticMethodReturningFRT_clone{{.*}} : $@convention(c) () -> FRTStruct
 }
+
+//  Testing Global/free C++ functions returning non-FRT 
+func testFreeFunctionsReturningNonFRT() {
+    let frtLocalVar1 = global_function_returning_non_FRT(); // CHECK: function_ref @{{.*}}global_function_returning_non_FRT{{.*}} : $@convention(c) () -> UnsafeMutablePointer<NonFRTStruct> 
+    let frtLocalVar2 = global_function_returning_non_FRT_with_attr_returns_retained(); // CHECK: function_ref @{{.*}}global_function_returning_non_FRT_with_attr_returns_retained{{.*}} : $@convention(c) () -> UnsafeMutablePointer<NonFRTStruct> 
+    let frtLocalVar3 = global_function_returning_non_FRT_with_attr_returns_unretained(); // CHECK: function_ref @{{.*}}global_function_returning_non_FRT_with_attr_returns_unretained{{.*}} : $@convention(c) () -> UnsafeMutablePointer<NonFRTStruct> 
+    let frtLocalVar4 = global_function_returning_non_FRT_create(); // CHECK: function_ref @{{.*}}global_function_returning_non_FRT_create{{.*}} : $@convention(c) () -> UnsafeMutablePointer<NonFRTStruct> 
+    let frtLocalVar5 = global_function_returning_non_FRT_copy(); // CHECK: function_ref @{{.*}}global_function_returning_non_FRT_copy{{.*}} : $@convention(c) () -> UnsafeMutablePointer<NonFRTStruct> 
+}
+
+//  Testing c++ static methods returning non-FRT
+func testStaticMethodsReturningNonFRT() {
+    let frtLocalVar1 = StructWithStaticMethodsReturningNonFRT.StaticMethodReturningNonFRT(); // CHECK: function_ref @{{.*}}StaticMethodReturningNonFRT{{.*}} : $@convention(c) () -> UnsafeMutablePointer<NonFRTStruct> 
+    let frtLocalVar2 = StructWithStaticMethodsReturningNonFRT.StaticMethodReturningNonFRTWithAttrReturnsRetained(); // CHECK: function_ref @{{.*}}StaticMethodReturningNonFRTWithAttrReturnsRetained{{.*}} : $@convention(c) () -> UnsafeMutablePointer<NonFRTStruct> 
+    let frtLocalVar3 = StructWithStaticMethodsReturningNonFRT.StaticMethodReturningNonFRTWithAttrReturnsUnretained(); // CHECK: function_ref @{{.*}}StaticMethodReturningNonFRTWithAttrReturnsUnretained{{.*}} : $@convention(c) () -> UnsafeMutablePointer<NonFRTStruct> 
+    let frtLocalVar4 = StructWithStaticMethodsReturningNonFRT.StaticMethodReturningNonFRT_create(); // CHECK: function_ref @{{.*}}StaticMethodReturningNonFRT_create{{.*}} : $@convention(c) () -> UnsafeMutablePointer<NonFRTStruct> 
+    let frtLocalVar5 = StructWithStaticMethodsReturningNonFRT.StaticMethodReturningNonFRT_copy(); // CHECK: function_ref @{{.*}}StaticMethodReturningNonFRT_copy{{.*}} : $@convention(c) () -> UnsafeMutablePointer<NonFRTStruct> 
+}
