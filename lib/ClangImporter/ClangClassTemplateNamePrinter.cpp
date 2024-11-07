@@ -12,6 +12,7 @@
 
 #include "ClangClassTemplateNamePrinter.h"
 #include "ImporterImpl.h"
+#include "swift/ClangImporter/ClangImporter.h"
 #include "clang/AST/TemplateArgumentVisitor.h"
 #include "clang/AST/TypeVisitor.h"
 
@@ -24,10 +25,13 @@ struct TemplateInstantiationNamePrinter
   NameImporter *nameImporter;
   ImportNameVersion version;
 
-  TemplateInstantiationNamePrinter(ASTContext &swiftCtx,
-                                   NameImporter *nameImporter,
-                                   ImportNameVersion version)
-      : swiftCtx(swiftCtx), nameImporter(nameImporter), version(version) {}
+  ClangImporter::Implementation *importerImplPtr;
+
+  TemplateInstantiationNamePrinter(
+      ASTContext &swiftCtx, NameImporter *nameImporter,
+      ImportNameVersion version, ClangImporter::Implementation *importerImplPtr)
+      : swiftCtx(swiftCtx), nameImporter(nameImporter), version(version),
+        importerImplPtr(importerImplPtr) {}
 
   std::string VisitType(const clang::Type *type) {
     // Print "_" as a fallback if we couldn't emit a more meaningful type name.
@@ -100,9 +104,7 @@ struct TemplateInstantiationNamePrinter
     bool isReferenceType = false;
     if (auto tagDecl = type->getPointeeType()->getAsTagDecl()) {
       if (auto *rd = dyn_cast<clang::RecordDecl>(tagDecl))
-        isReferenceType =
-            ClangImporter::Implementation::recordHasReferenceSemantics(
-                rd, swiftCtx);
+        isReferenceType = recordHasReferenceSemantics(rd, importerImplPtr);
     }
 
     TagTypeDecorator decorator;
@@ -167,8 +169,9 @@ struct TemplateArgumentPrinter
   TemplateInstantiationNamePrinter typePrinter;
 
   TemplateArgumentPrinter(ASTContext &swiftCtx, NameImporter *nameImporter,
-                          ImportNameVersion version)
-      : typePrinter(swiftCtx, nameImporter, version) {}
+                          ImportNameVersion version,
+                          ClangImporter::Implementation *importerImplPtr)
+      : typePrinter(swiftCtx, nameImporter, version, importerImplPtr) {}
 
   void VisitTemplateArgument(const clang::TemplateArgument &arg,
                              llvm::raw_svector_ostream &buffer) {
@@ -219,7 +222,8 @@ struct TemplateArgumentPrinter
 std::string swift::importer::printClassTemplateSpecializationName(
     const clang::ClassTemplateSpecializationDecl *decl, ASTContext &swiftCtx,
     NameImporter *nameImporter, ImportNameVersion version) {
-  TemplateArgumentPrinter templateArgPrinter(swiftCtx, nameImporter, version);
+  TemplateArgumentPrinter templateArgPrinter(
+      swiftCtx, nameImporter, version, nameImporter->getImporterImplPtr());
 
   llvm::SmallString<128> storage;
   llvm::raw_svector_ostream buffer(storage);

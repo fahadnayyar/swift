@@ -6475,6 +6475,7 @@ bool ClassDecl::isForeignReferenceType() const {
   if (!clangRecordDecl)
     return false;
 
+  // importerImplPtr being nullpointer here is not expected to cause any issue
   CxxRecordSemanticsKind kind = evaluateOrDefault(
       getASTContext().evaluator,
       CxxRecordSemantics({clangRecordDecl, getASTContext()}), {});

@@ -328,15 +328,18 @@ enum class CxxRecordSemanticsKind {
 struct CxxRecordSemanticsDescriptor final {
   const clang::RecordDecl *decl;
   ASTContext &ctx;
+  ClangImporter::Implementation *importerImplPtr;
 
   /// Whether to emit warnings for missing destructor or copy constructor
   /// whenever the classification of the type assumes that they exist (e.g. for
   /// a value type).
   bool shouldDiagnoseLifetimeOperations;
 
-  CxxRecordSemanticsDescriptor(const clang::RecordDecl *decl, ASTContext &ctx,
-                               bool shouldDiagnoseLifetimeOperations = true)
-      : decl(decl), ctx(ctx),
+  CxxRecordSemanticsDescriptor(
+      const clang::RecordDecl *decl, ASTContext &ctx,
+      ClangImporter::Implementation *importerImplPtr = nullptr,
+      bool shouldDiagnoseLifetimeOperations = true)
+      : decl(decl), ctx(ctx), importerImplPtr(importerImplPtr),
         shouldDiagnoseLifetimeOperations(shouldDiagnoseLifetimeOperations) {}
 
   friend llvm::hash_code hash_value(const CxxRecordSemanticsDescriptor &desc) {
