@@ -327,17 +327,18 @@ enum class CxxRecordSemanticsKind {
 
 struct CxxRecordSemanticsDescriptor final {
   const clang::RecordDecl *decl;
-  ASTContext &ctx;
-
   /// Whether to emit warnings for missing destructor or copy constructor
   /// whenever the classification of the type assumes that they exist (e.g. for
   /// a value type).
   bool shouldDiagnoseLifetimeOperations;
+  ClangImporter::Implementation &importerImpl;
 
-  CxxRecordSemanticsDescriptor(const clang::RecordDecl *decl, ASTContext &ctx,
+  CxxRecordSemanticsDescriptor(const clang::RecordDecl *decl,
+                               ClangImporter::Implementation &importerImpl,
                                bool shouldDiagnoseLifetimeOperations = true)
-      : decl(decl), ctx(ctx),
-        shouldDiagnoseLifetimeOperations(shouldDiagnoseLifetimeOperations) {}
+      : decl(decl),
+        shouldDiagnoseLifetimeOperations(shouldDiagnoseLifetimeOperations),
+        importerImpl(importerImpl) {}
 
   friend llvm::hash_code hash_value(const CxxRecordSemanticsDescriptor &desc) {
     return llvm::hash_combine(desc.decl);
@@ -368,9 +369,12 @@ SourceLoc extractNearestSourceLoc(CxxRecordSemanticsDescriptor desc);
 class CxxRecordSemantics
     : public SimpleRequest<CxxRecordSemantics,
                            CxxRecordSemanticsKind(CxxRecordSemanticsDescriptor),
-                           RequestFlags::Uncached> {
+                           RequestFlags::Cached> {
 public:
   using SimpleRequest::SimpleRequest;
+
+  // Caching
+  bool isCached() const { return true; }
 
   // Source location
   SourceLoc getNearestLoc() const { return SourceLoc(); };
